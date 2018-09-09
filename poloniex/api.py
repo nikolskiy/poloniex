@@ -2,9 +2,9 @@
 https://poloniex.com/support/api/
 """
 import requests
+import json
 import hmac
 import hashlib
-import importlib
 from . import utils
 from urllib.parse import urlencode
 from time import time
@@ -46,7 +46,7 @@ class SecretKeyError(PoloniexError):
 class Poloniex:
     trading_url = settings.trading_url
     public_url = settings.public_url
-    secrets_module = settings.secrets_module
+    secret_json_path = settings.secret_json_path
     get = requests.get
     post = requests.post
     rate_limit = True
@@ -99,23 +99,24 @@ class Poloniex:
     def _check_secrets(self):
         """
         Check internal px_key and px_secret values. If they are not empty,
-        move on. If they are not specified try to load them as python module.
-        The path to the module is specified in settings in doted notation.
-        Default is `secrets.poloniex`. It means that there is a secrets
-        package (excluded from git) with poloniex.py file that has `key` and
-        `secret` defined.
+        move on. If they are not specified try to load them from json file.
+        The path to the file is specified in settings.
+        Default is `~/poloniex/secret.json`. It means that there is a secrets
+        json file that has `key` and `secret` defined. For example:
+        {
+            "key": "test",
+            "secret": "secret"
+        }
+
+        :return: None
         """
         if self.px_key and self.px_secret:
             return
 
-        try:
-            px = importlib.import_module(self.secrets_module)
-        except ImportError:
-            msg = 'Secrets configuration was not provided. Only public api ' \
-                  'can be used without private key.'
-            raise SecretKeyError(msg)
+        with open(self.secret_json_path) as f:
+            data = json.load(f)
 
-        key, secret = getattr(px, 'key', None), getattr(px, 'secret', None)
+        key, secret = data.get('key'), data.get('secret')
         if not key:
             raise SecretKeyError(
                 'poloniex secrets module is missing key value'
