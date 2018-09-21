@@ -11,10 +11,13 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 
+VERSION = '0.0.2'
+
+
 setup(
     python_requires='>=3.6',
     name='poloniex',
-    version='0.0.1',
+    version=VERSION,
     description='Poloniex API client',
     url='http://github.com/nikolskiy/poloniex',
     author='Denis Nikolskiy',

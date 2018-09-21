@@ -277,7 +277,7 @@ class Poloniex:
         return self._public_api(
             command='returnLoanOrders',
             currency=currency,
-            limit=5000
+            limit=999999
         )
 
     # Trading APIs #
